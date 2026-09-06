@@ -5,9 +5,8 @@ import string
 
 from flanker.addresslib import address
 
-from mock import patch
-from nose.tools import assert_equal, assert_not_equal
-from nose.tools import nottest
+from unittest.mock import patch
+from tests import nottest
 
 from ... import skip_if_asked
 
@@ -32,7 +31,7 @@ def test_exchanger_lookup():
     # very simple test that should fail Hotmail custom grammar
     addr_string = '!mailgun' + DOMAIN
     addr = address.validate_address(addr_string)
-    assert_equal(addr, None)
+    assert addr == None
 
 
 def test_hotmail_pass():
@@ -43,36 +42,36 @@ def test_hotmail_pass():
         for i in range(1, 65):
             localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # start must be letter or number
         for i in string.ascii_letters + string.digits:
             localpart = str(i) + 'a'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # end must be letter or number
         for i in string.ascii_letters + string.digits + '-_':
             localpart = 'a' + str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # must be letter, num, period, hyphen, or underscore
         for i in string.ascii_letters + string.digits + '.-_':
             localpart = 'a' + str(i) + '0'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # only zero or one plus allowed
         for i in range(0, 2):
             localpart = 'aa' + '+'*i + '00'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # allow multiple periods
         localpart = 'aa.bb.00'
         addr = address.validate_address(localpart + DOMAIN)
-        assert_not_equal(addr, None)
+        assert addr != None
 
 
 def test_hotmail_fail():
@@ -83,13 +82,13 @@ def test_hotmail_fail():
         for i in list(range(0, 0)) + list(range(65, 70)):
             localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid start char (must start with letter)
         for i in string.punctuation:
             localpart = str(i) + 'a'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid end char (must end with letter or num, hyphen, or underscore)
         invalid_end_chars = string.punctuation
@@ -99,7 +98,7 @@ def test_hotmail_fail():
         for i in invalid_end_chars:
             localpart = 'a' + str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid chars (must be letter, num, underscore, or dot)
         invalid_chars = string.punctuation
@@ -110,14 +109,14 @@ def test_hotmail_fail():
         for i in invalid_chars:
             localpart = 'a' + str(i) + '0'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # no more than 1 consecutive dot (.) or plus (+) allowed
         for i in range(2, 4):
             localpart = 'aa' + '.'*i + '00'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
             localpart = 'aa' + '+'*i + '00'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None

@@ -1,4 +1,3 @@
-from nose.tools import eq_
 
 from flanker.mime import create, bounce
 from tests import BOUNCE, SIGNED, BOUNCE_OFFICE365
@@ -60,5 +59,5 @@ def test_bounce_detect():
         result = bounce.detect(tc['mime'])
 
         # Then
-        eq_(result, tc['result'])
-        eq_(result.is_bounce(), tc['is_bounce'])
+        assert result == tc['result']
+        assert result.is_bounce() == tc['is_bounce']

@@ -1,5 +1,4 @@
 # coding:utf-8
-from nose.tools import eq_
 
 from flanker.mime.message.scanner import tokenize, ContentType, Boundary
 from tests import (NO_CTYPE, EIGHT_BIT, TORTURE, BIG, DASHED_BOUNDARIES,
@@ -208,4 +207,4 @@ def tokenizer_table_driven_test():
         for expected_token, token in zip(
                 tc['tokens'] + [''] * (max_len - len(tc['tokens'])),
                 tokens + [''] * (max_len - len(tokens))):
-            eq_(expected_token, token)
+            assert expected_token == token

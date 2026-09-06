@@ -4,12 +4,10 @@ import re
 import string
 import random
 
-import six
 
 from .. import *
 
-from nose.tools import assert_equal, assert_not_equal, ok_
-from nose.tools import nottest
+from tests import nottest
 
 from flanker.addresslib import validate
 from flanker.addresslib import corrector
@@ -21,10 +19,7 @@ COMMENT = re.compile(r'''\s*#''')
 @nottest
 def generate_mutated_string(source_str, num):
     letters = list(source_str)
-    if six.PY2:
-        rchars = string.ascii_lowercase.translate(None, source_str + '.')
-    else:
-        rchars = string.ascii_lowercase.translate(source_str + '.')
+    rchars = string.ascii_lowercase.translate(source_str + '.')
 
     random_orig = random.sample(list(enumerate(source_str)), num)
     random_new = random.sample(list(enumerate(rchars)), num)
@@ -37,10 +32,7 @@ def generate_mutated_string(source_str, num):
 @nottest
 def generate_longer_string(source_str, num):
     letters = list(source_str)
-    if six.PY2:
-        rchars = string.ascii_lowercase.translate(None, source_str + '.')
-    else:
-        rchars = string.ascii_lowercase.translate(source_str + '.')
+    rchars = string.ascii_lowercase.translate(source_str + '.')
 
     for i in range(num):
         letters = [random.choice(rchars)] + letters
@@ -90,7 +82,7 @@ def test_domain_typo_valid_set():
     accuracy = float(sugg_correct) / sugg_total
     print('external valid: accuracy: {0}, correct: {1}, total: {2}'
           .format(accuracy, sugg_correct, sugg_total))
-    ok_(accuracy > 0.90)
+    assert accuracy > 0.90
 
 
 def test_domain_typo_invalid_set():
@@ -123,7 +115,7 @@ def test_domain_typo_invalid_set():
     accuracy = float(sugg_correct) / sugg_total
     print('external invalid: accuracy: {0}, correct: {1}, total: {2}'
           .format(accuracy, sugg_correct, sugg_total))
-    ok_(accuracy > 0.90)
+    assert accuracy > 0.90
 
 
 # For the remaining tests, the accuracy is significantly lower than
@@ -155,7 +147,7 @@ def test_suggest_alternate_mutations_valid():
     accuracy = float(sugg_correct) / sugg_total
     print('mutations valid: accuracy: {0}, correct: {1}, total: {2}'
           .format(accuracy, sugg_correct, sugg_total))
-    ok_(accuracy > 0.60)
+    assert accuracy > 0.60
 
 
 def test_suggest_alternate_longer_valid():
@@ -179,7 +171,7 @@ def test_suggest_alternate_longer_valid():
     accuracy = float(sugg_correct) / sugg_total
     print('longer valid: accuracy: {0}, correct: {1}, total: {2}'
           .format(accuracy, sugg_correct, sugg_total))
-    ok_(accuracy > 0.60)
+    assert accuracy > 0.60
 
 
 def test_suggest_alternate_shorter_valid():
@@ -203,7 +195,7 @@ def test_suggest_alternate_shorter_valid():
     accuracy = float(sugg_correct) / sugg_total
     print('shorter valid: accuracy: {0}, correct: {1}, total: {2}'
           .format(accuracy, sugg_correct, sugg_total))
-    ok_(accuracy > 0.60)
+    assert accuracy > 0.60
 
 
 def test_suggest_alternate_invalid():
@@ -228,4 +220,4 @@ def test_suggest_alternate_invalid():
     accuracy = float(sugg_correct) / sugg_total
     print('alternative invalid: accuracy: {0}, correct: {1}, total: {2}'
           .format(accuracy, sugg_correct, sugg_total))
-    ok_(accuracy > 0.60)
+    assert accuracy > 0.60

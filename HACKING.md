@@ -7,28 +7,19 @@ See the [Quickstart Guide](README.md) for instructions on how to install Flanker
 
 ### Running Tests
 
-Call `nosetests` in the `tests` directory to run unit tests. Note, some (network based) tests use `mock`.
+Install the test dependencies and run `pytest` from the repository root. Some
+(network-based) tests use `unittest.mock`.
 
 ```bash
-$ cd ~/flanker/tests
-$ nosetests
-S..S..S..S..S..S.............................................SS................................................................................................................................................................
-----------------------------------------------------------------------
-Ran 223 tests in 2.256s
+$ pip install -e ".[tests,validator]"
+$ pytest -q
+```
 
-OK (SKIP=8)
-````
-
-Call with `--no-skip` to run all tests.
+A handful of plugin tests hit the network and self-skip; pass `--no-skip` to run
+them too.
 
 ```bash
-$ cd ~/flanker/tests
-$ nosetests --no-skip
-...............................................................................................................................................................................................................................
-----------------------------------------------------------------------
-Ran 223 tests in 7.806s
-
-OK
+$ pytest -q --no-skip
 ```
 
 ### Discussion

@@ -4,7 +4,6 @@ import re
 
 from .. import *
 
-from nose.tools import assert_equal, assert_not_equal
 from flanker.addresslib import address
 
 COMMENT = re.compile(r'''\s*#''')
@@ -23,7 +22,7 @@ def test_mailbox_valid_set():
             continue
 
         mbox = address.parse(line, strict=True)
-        assert_not_equal(mbox, None)
+        assert mbox != None
 
 def test_mailbox_invalid_set():
     for line in MAILBOX_INVALID_TESTS.split('\n'):
@@ -38,7 +37,7 @@ def test_mailbox_invalid_set():
             continue
 
         mbox = address.parse(line, strict=True)
-        assert_equal(mbox, None)
+        assert mbox == None
 
 def test_url_valid_set():
     for line in URL_VALID_TESTS.split('\n'):
@@ -53,7 +52,7 @@ def test_url_valid_set():
             continue
 
         mbox = address.parse(line, strict=True)
-        assert_not_equal(mbox, None)
+        assert mbox != None
 
 def test_url_invalid_set():
     for line in URL_INVALID_TESTS.split('\n'):
@@ -68,4 +67,4 @@ def test_url_invalid_set():
             continue
 
         mbox = address.parse(line, strict=True)
-        assert_equal(mbox, None)
+        assert mbox == None

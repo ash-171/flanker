@@ -2,8 +2,8 @@
 
 from itertools import chain, combinations, permutations
 
-from nose.tools import assert_equal, assert_not_equal, assert_raises, eq_
-from nose.tools import nottest
+import pytest
+from tests import nottest
 
 from flanker.addresslib.address import EmailAddress, AddressList, parse_list, \
     parse
@@ -21,7 +21,7 @@ def powerset(iterable):
 @nottest
 def run_test(string, expected_mlist):
     mlist = parse_list(string, strict=True)
-    assert_equal(mlist, expected_mlist)
+    assert mlist == expected_mlist
 
 
 BILL_AS = EmailAddress(None, 'bill@microsoft.com')
@@ -101,30 +101,30 @@ def test_parse_list_from_list():
         al_from_s, bad_from_s = parse_list(', '.join(tc['in']), as_tuple=True)
 
         # Then
-        eq_(tc['good'], al)
-        eq_(tc['good'], al_from_l)
+        assert tc['good'] == al
+        assert tc['good'] == al_from_l
         for j in range(len(al_from_l)):
             _strict_eq(tc['good'][j], al[j])
             _strict_eq(tc['good'][j], al_from_l[j])
-        eq_(tc['bad'], bad_from_l)
+        assert tc['bad'] == bad_from_l
 
-        eq_(tc.get('good_s', tc['good']), al_from_s)
+        assert tc.get('good_s', tc['good']) == al_from_s
         for j in range(len(al_from_s)):
             _strict_eq(tc.get('good_s', tc['good'])[j], al_from_s[j])
-        eq_(tc.get('bad_s', tc['bad']), bad_from_s)
+        assert tc.get('bad_s', tc['bad']) == bad_from_s
 
 
 def test_endpoints():
     # expected result: [foo@example.com, baz@example.com]
     presult = parse_list('foo@example.com, bar, baz@example.com', as_tuple=False)
     assert isinstance(presult, AddressList)
-    assert_equal(0, len(presult))
+    assert 0 == len(presult)
 
     # expected result: ([foo@example.com, baz@example.com], ['bar'])
     presult = parse_list(['foo@example.com', 'bar', 'baz@example.com'], as_tuple=True)
     assert type(presult) is tuple
-    assert_equal(2, len(presult[0]))
-    assert_equal(1, len(presult[1]))
+    assert 2 == len(presult[0])
+    assert 1 == len(presult[1])
 
 
 def test_delimiters():
@@ -150,17 +150,17 @@ def test_append_address_only():
     al.append(parse(u'Федот <стрелец@почта.рф>'))
     al.append(parse('https://mailgun.net/webhooks'))
 
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         al.append('foo@bar.com')
 
 
 def _strict_eq(lhs_addr, rhs_addr):
-    eq_(type(lhs_addr), type(rhs_addr))
+    assert type(lhs_addr) == type(rhs_addr)
     _typed_eq(lhs_addr.address, rhs_addr.address)
     if isinstance(lhs_addr, EmailAddress):
         _typed_eq(lhs_addr.display_name, rhs_addr.display_name)
 
 
 def _typed_eq(lhs, rhs):
-    eq_(lhs, rhs)
-    eq_(type(lhs), type(rhs))
+    assert lhs == rhs
+    assert type(lhs) == type(rhs)

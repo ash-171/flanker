@@ -4,10 +4,8 @@ import re
 
 from .. import *
 
-import six
-from nose.tools import assert_equal, assert_not_equal
-from nose.tools import nottest
-from mock import patch
+from tests import nottest
+from unittest.mock import patch
 
 from flanker.addresslib import address, validate
 
@@ -74,9 +72,8 @@ def mock_exchanger_lookup(arg, metrics=False):
 
 @nottest
 def fake_dns_lookup(domain_name, lookup_results):
-    if six.PY3:
-        # This is how `dnsq` actually returns mx_records. Emulating it in tests
-        lookup_results = filter(lambda x: True, lookup_results)
+    # This is how `dnsq` actually returns mx_records. Emulating it in tests
+    lookup_results = filter(lambda x: True, lookup_results)
 
     fqdn = '%s.' % domain_name
     return {
@@ -102,17 +99,17 @@ def test_abridged_mailbox_valid_set():
 
             addr = line + '@ai'
             mbox = address.validate_address(addr)
-            assert_not_equal(mbox, None)
+            assert mbox != None
 
             # domain
             addr = line + '@mailgun.org'
             mbox = address.validate_address(addr)
-            assert_not_equal(mbox, None)
+            assert mbox != None
 
             # subdomain
             addr = line + '@fakecompany.mailgun.org'
             mbox = address.validate_address(addr)
-            assert_not_equal(mbox, None)
+            assert mbox != None
 
 
 def test_abridged_mailbox_invalid_set():
@@ -133,17 +130,17 @@ def test_abridged_mailbox_invalid_set():
 
             addr = line + '@ai'
             mbox = address.validate_address(addr)
-            assert_equal(mbox, None)
+            assert mbox == None
 
             # domain
             addr = line + '@mailgun.org'
             mbox = address.validate_address(addr)
-            assert_equal(mbox, None)
+            assert mbox == None
 
             # subdomain
             addr = line + '@fakecompany.mailgun.org'
             mbox = address.validate_address(addr)
-            assert_equal(mbox, None)
+            assert mbox == None
 
 
 def test_parse_syntax_only_false():
@@ -166,37 +163,37 @@ def test_parse_syntax_only_false():
         mock_method.side_effect = mock_exchanger_lookup
 
         parse, unpar = address.validate_list(', '.join(valid_tld_list), as_tuple=True)
-        assert_equal(parse, valid_tld_list)
-        assert_equal(unpar, [])
+        assert parse == valid_tld_list
+        assert unpar == []
 
         parse, unpar = address.validate_list(', '.join(valid_domain_list), as_tuple=True)
-        assert_equal(parse, valid_domain_list)
-        assert_equal(unpar, [])
+        assert parse == valid_domain_list
+        assert unpar == []
 
         parse, unpar = address.validate_list(', '.join(valid_subdomain_list), as_tuple=True)
-        assert_equal(parse, valid_subdomain_list)
-        assert_equal(unpar, [])
+        assert parse == valid_subdomain_list
+        assert unpar == []
 
         # all invalid
         parse, unpar = address.validate_list(invalid_mx_list, as_tuple=True)
-        assert_equal(parse, [])
-        assert_equal(unpar, invalid_mx_list)
+        assert parse == []
+        assert unpar == invalid_mx_list
 
         parse, unpar = address.validate_list(invalid_tld_list, as_tuple=True)
-        assert_equal(parse, [])
-        assert_equal(unpar, invalid_tld_list)
+        assert parse == []
+        assert unpar == invalid_tld_list
 
         parse, unpar = address.validate_list(invalid_domain_list, as_tuple=True)
-        assert_equal(parse, [])
-        assert_equal(unpar, invalid_domain_list)
+        assert parse == []
+        assert unpar == invalid_domain_list
 
         parse, unpar = address.validate_list(invalid_subdomain_list, as_tuple=True)
-        assert_equal(parse, [])
-        assert_equal(unpar, invalid_subdomain_list)
+        assert parse == []
+        assert unpar == invalid_subdomain_list
 
         parse, unpar = address.validate_list(all_list, as_tuple=True)
-        assert_equal(parse, all_valid_list)
-        assert_equal(unpar, all_invalid_list)
+        assert parse == all_valid_list
+        assert unpar == all_invalid_list
 
 
 @patch('flanker.addresslib.validate.connect_to_mail_exchanger')
@@ -211,8 +208,8 @@ def test_mx_lookup(dns, cmx):
     cmx.return_value = 'mx1.fake.mailgun.com'
 
     validated_address = address.validate_address(email_address)
-    assert_not_equal(validated_address, None)
-    assert_equal(validated_address, expected_address)
+    assert validated_address != None
+    assert validated_address == expected_address
 
 
 @patch('flanker.addresslib.validate.connect_to_mail_exchanger')
@@ -228,8 +225,8 @@ def test_mx_lookup_has_mx_has_fallback(dns, cmx):
     cmx.return_value = 'domain.com'
 
     addr = address.validate_address(email_address)
-    assert_not_equal(addr, None)
-    assert_equal(addr, expected_address)
+    assert addr != None
+    assert addr == expected_address
 
 
 @patch('flanker.addresslib.validate.connect_to_mail_exchanger')
@@ -244,7 +241,7 @@ def test_mx_lookup_has_mx_no_server_answer(dns, cmx):
     cmx.return_value = None
 
     addr = address.validate_address(email_address)
-    assert_equal(addr, None)
+    assert addr == None
 
 
 @patch('flanker.addresslib.validate.connect_to_mail_exchanger')
@@ -257,7 +254,7 @@ def test_mx_lookup_has_no_mx(dns, cmx):
     cmx.return_value = None
 
     addr = address.validate_address(email_address)
-    assert_equal(addr, None)
+    assert addr == None
 
 
 def test_mx_lookup_metrics():
@@ -265,9 +262,9 @@ def test_mx_lookup_metrics():
         mock_method.side_effect = mock_exchanger_lookup
 
         a, metrics = validate.mail_exchanger_lookup('example.com', metrics=True)
-        assert_equal(metrics['mx_lookup'], 10)
-        assert_equal(metrics['dns_lookup'], 20)
-        assert_equal(metrics['mx_conn'], 30)
+        assert metrics['mx_lookup'] == 10
+        assert metrics['dns_lookup'] == 20
+        assert metrics['mx_conn'] == 30
 
         # ensure values are unpacked correctly
         a = validate.mail_exchanger_lookup('example.com', metrics=False)
@@ -280,10 +277,10 @@ def test_validate_address_metrics():
 
         parse, metrics = address.validate_address('foo@example.com', metrics=True)
 
-        assert_not_equal(metrics, None)
-        assert_equal(metrics['mx_lookup'], 10)
-        assert_equal(metrics['dns_lookup'], 20)
-        assert_equal(metrics['mx_conn'], 30)
+        assert metrics != None
+        assert metrics['mx_lookup'] == 10
+        assert metrics['dns_lookup'] == 20
+        assert metrics['mx_conn'] == 30
 
 
 # @patch('flanker.addresslib.validate.connect_to_mail_exchanger')
@@ -309,22 +306,22 @@ def test_mx_yahoo_dual_lookup(ld, cmx):
     # Invalidate managed email response out of pattern
     mailbox = '1testuser@yahoo.com'
     addr = address.validate_address(mailbox)
-    assert_equal(type(addr), type(None))
+    assert type(addr) == type(None)
 
     # Same test but with validate_list
     addr = address.validate_list([mailbox])
     expected = 'flanker.addresslib.address:'
-    assert_equal(addr, [])
+    assert addr == []
 
     # Allow Yahoo MX unmanaged mailboxes to pass remaining patterns
     mailbox = '8testuser@frontier.com'
     addr = address.validate_address(mailbox)
-    assert_equal(addr, mailbox)
+    assert addr == mailbox
 
     # Same test but with validate_list
     expected = 'flanker.addresslib.address:'
     addr = address.validate_list([mailbox])
-    assert_equal(addr, mailbox)
+    assert addr == mailbox
 
 
 def test_mx_yahoo_manage_flag_toggle():
@@ -332,13 +329,13 @@ def test_mx_yahoo_manage_flag_toggle():
     mailbox = '1testuser@yahoo.com'
     addr_obj = address.parse(mailbox)
     managed = validate.yahoo.managed_email(addr_obj.hostname)
-    assert_equal(managed, True)
+    assert managed == True
 
     # Same but inversed, unmanaged yahoo mailbox
     mailbox = '1testuser@frontier.com'
     addr_obj = address.parse(mailbox)
     managed = validate.yahoo.managed_email(addr_obj.hostname)
-    assert_equal(managed, False)
+    assert managed == False
 
 
 @patch('flanker.addresslib.validate.connect_to_mail_exchanger')
@@ -351,22 +348,22 @@ def test_mx_aol_dual_lookup(ld, cmx):
     # this test needs to be fully mocked out so upstream doesn't interfere
     mailbox = '1testuser@aol.com'
     addr = address.validate_address(mailbox)
-    assert_equal(type(addr), type(None))
+    assert type(addr) == type(None)
 
     # Same test but with validate_list
     addr = address.validate_list([mailbox])
     expected = 'flanker.addresslib.address:'
-    assert_equal(addr, [])
+    assert addr == []
 
     # Allow AOL MX unmanaged mailboxes to pass remaining patterns
     mailbox = '8testuser@verizon.net'
     addr = address.validate_address(mailbox)
-    assert_equal(addr, mailbox)
+    assert addr == mailbox
 
     # Same test but with validate_list
     expected = 'flanker.addresslib.address:'
     addr = address.validate_list([mailbox])
-    assert_equal(addr, mailbox)
+    assert addr == mailbox
 
 
 def test_mx_aol_manage_flag_toggle():
@@ -374,13 +371,13 @@ def test_mx_aol_manage_flag_toggle():
     mailbox = '1testuser@aol.com'
     addr_obj = address.parse(mailbox)
     unmanaged = validate.aol.unmanaged_email(addr_obj.hostname)
-    assert_equal(unmanaged, False)
+    assert unmanaged == False
 
     # Same but inversed, unmanaged aol mailbox
     mailbox = '1testuser@verizon.net'
     addr_obj = address.parse(mailbox)
     unmanaged = validate.aol.unmanaged_email(addr_obj.hostname)
-    assert_equal(unmanaged, True)
+    assert unmanaged == True
 
 
 def test_bad_tld():
@@ -389,13 +386,13 @@ def test_bad_tld():
     addr_obj, metrics = address.validate_address(
         addr_spec, skip_remote_checks=True, metrics=True
     )
-    assert_equal(addr_obj, None)
-    assert_not_equal(metrics['tld_lookup'], 0)
+    assert addr_obj == None
+    assert metrics['tld_lookup'] != 0
 
     # example is not a valid TLD
     addr_spec = 'test@example'
     addr_obj, metrics = address.validate_address(
         addr_spec, skip_remote_checks=True, metrics=True
     )
-    assert_equal(addr_obj, None)
-    assert_not_equal(metrics['tld_lookup'], 0)
+    assert addr_obj == None
+    assert metrics['tld_lookup'] != 0

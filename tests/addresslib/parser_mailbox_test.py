@@ -1,6 +1,5 @@
 # coding:utf-8
-import six
-from nose.tools import nottest, assert_equal
+from tests import nottest
 from ply.lex import LexError
 from ply.yacc import YaccError
 
@@ -13,7 +12,7 @@ VALID_QUOTED_PAIR = [chr(x) for x in range(0x20, 0x7e)]
 FULL_QTEXT = ''.join(VALID_QTEXT)
 FULL_QUOTED_PAIR = '\\' + '\\'.join(VALID_QUOTED_PAIR)
 
-CONTROL_CHARS = ''.join(map(six.unichr, list(range(0, 9)) + list(range(14, 32)) + [127]))
+CONTROL_CHARS = ''.join(map(chr, list(range(0, 9)) + list(range(14, 32)) + [127]))
 
 @nottest
 def chunks(l, n):
@@ -24,21 +23,21 @@ def chunks(l, n):
 def run_full_mailbox_test(string, expected, full_spec=None):
     mbox = address.parse(string, strict=True)
     if mbox:
-        assert_equal(expected.display_name, mbox.display_name)
-        assert_equal(expected.address, mbox.address)
+        assert expected.display_name == mbox.display_name
+        assert expected.address == mbox.address
         if full_spec:
-            assert_equal(full_spec, mbox.full_spec())
-        assert_equal(mbox, address.parse(mbox.to_unicode(), strict=True)) # check symmetry
+            assert full_spec == mbox.full_spec()
+        assert mbox == address.parse(mbox.to_unicode(), strict=True)  # check symmetry
         return
-    assert_equal(expected, mbox)
+    assert expected == mbox
 
 @nottest
 def run_mailbox_test(string, expected_string):
     mbox = address.parse(string, strict=True)
     if mbox:
-        assert_equal(expected_string, mbox.address)
+        assert expected_string == mbox.address
         return
-    assert_equal(expected_string, mbox)
+    assert expected_string == mbox
 
 
 def test_mailbox():
@@ -118,7 +117,7 @@ def test_display_name():
 
         # FIXME: In Python 3 subgroup of separator symbols is treated as
         # FIXME: allowed. We need to figure out why.
-        if six.PY3 and ord(cc) in [0x1c, 0x1d, 0x1e, 0x1f]:
+        if ord(cc) in [0x1c, 0x1d, 0x1e, 0x1f]:
             continue
 
         run_mailbox_test(u'"{0}" <a@b>'.format(cc), None)
@@ -539,5 +538,5 @@ def test_full_spec_symmetry_bug():
     restored = addr.full_spec()
 
     # Then
-    assert_equal(original, restored)
+    assert original == restored
 

@@ -5,9 +5,8 @@ import string
 
 from flanker.addresslib import address
 
-from mock import patch
-from nose.tools import assert_equal, assert_not_equal
-from nose.tools import nottest
+from unittest.mock import patch
+from tests import nottest
 
 from ... import skip_if_asked
 
@@ -33,7 +32,7 @@ def test_exchanger_lookup():
     # very simple test that should fail Google Apps custom grammar
     addr_string = '!mailgun' + DOMAIN
     addr = address.validate_address(addr_string)
-    assert_equal(addr, None)
+    assert addr == None
 
 
 def test_google_pass():
@@ -44,36 +43,36 @@ def test_google_pass():
         for i in string.ascii_letters + string.digits + '_\'':
             localpart = str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # valid length range
         for i in range(1, 65):
             localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # start must be alphanum, underscore, dash, or apostrophe
         for i in string.ascii_letters + string.digits + '_-\'':
             localpart = str(i) + 'aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # end must be alphanum, underscore, dash, or apostrophe
         for i in string.ascii_letters + string.digits + '_-\'':
             localpart = 'aaaaa' + str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # must be alphanum, underscore, dash, apostrophe, dots
         for i in string.ascii_letters + string.digits + '_-\'.':
             localpart = 'aaa' + str(i) + '000'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # everything after plus (+) is ignored
         for localpart in ['aa+', 'aa+tag', 'aa+tag+tag', 'aa++tag', 'aa+' + ATOM_STR]:
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
 
 def test_google_fail():
@@ -87,13 +86,13 @@ def test_google_fail():
         for i in invalid_chars:
             localpart = str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid length range
         for i in list(range(0)) + list(range(65, 80)):
             localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid start char (must start with alphanum, underscore, dash, or apostrophe)
         invalid_chars = string.punctuation
@@ -103,7 +102,7 @@ def test_google_fail():
         for i in invalid_chars:
             localpart = str(i) + 'aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid end char (must end with alphanum, underscore, dash, or apostrophe)
         invalid_chars = string.punctuation
@@ -114,7 +113,7 @@ def test_google_fail():
         for i in invalid_chars:
             localpart = 'aaaaa' + str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid chars (must be alphanum, underscore, dash, apostrophe, dots)
         invalid_chars = string.punctuation
@@ -126,14 +125,14 @@ def test_google_fail():
         for i in invalid_chars:
             localpart = 'aaa' + str(i) + '000'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # dots (.) are NOT ignored
         addr1 = address.validate_address('aa..aa' + DOMAIN)
         addr2 = address.validate_address('aa.aa' + DOMAIN)
-        assert_not_equal(addr1, addr2)
+        assert addr1 != addr2
 
         # everything after plus (+) is ignored, but something must be infront of it
         for localpart in ['+t1', '+' + ATOM_STR]:
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None

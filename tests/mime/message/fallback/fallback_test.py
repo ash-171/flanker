@@ -2,9 +2,7 @@
 
 from contextlib import closing
 
-import six
-from nose.tools import ok_, eq_, assert_false
-from six.moves import StringIO
+from io import StringIO
 
 from flanker import _email
 from flanker.mime.message import ContentType
@@ -18,54 +16,54 @@ from tests import (IPHONE, ENCLOSED, TORTURE, TEXT_ONLY, MAILFORMED_HEADERS,
 def bad_string_test():
     mime = "Content-Type: multipart/broken\r\n\r\n"
     message = create.from_string("Content-Type:multipart/broken")
-    eq_(mime, message.to_string())
+    assert mime == message.to_string()
     with closing(StringIO()) as out:
         message.to_stream(out)
-        eq_(mime, out.getvalue())
+        assert mime == out.getvalue()
     list(message.walk())
     message.remove_headers()
-    assert_false(message.is_attachment())
-    assert_false(message.is_inline())
-    assert_false(message.is_delivery_notification())
-    assert_false(message.is_bounce())
-    ok_(message.to_python_message())
-    eq_(None, message.get_attached_message())
-    ok_(str(message))
+    assert not (message.is_attachment())
+    assert not (message.is_inline())
+    assert not (message.is_delivery_notification())
+    assert not (message.is_bounce())
+    assert message.to_python_message()
+    assert None == message.get_attached_message()
+    assert str(message)
 
 
 def bad_string_test_2():
     mime = "Content-Mype: multipart/broken\n\n"
     message = create.from_string(mime)
-    ok_(message.content_type)
-    eq_((None, {}), message.content_disposition)
+    assert message.content_type
+    assert (None, {}) == message.content_disposition
 
 
 def bad_python_test():
     message = create.from_python(
         _email.message_from_string("Content-Type:multipart/broken"))
-    ok_(message.to_string())
+    assert message.to_string()
     with closing(StringIO()) as out:
         message.to_stream(out)
-        ok_(out.getvalue())
+        assert out.getvalue()
     list(message.walk())
     message.remove_headers()
-    assert_false(message.is_attachment())
-    assert_false(message.is_inline())
-    assert_false(message.is_delivery_notification())
-    assert_false(message.is_bounce())
-    ok_(message.to_python_message())
-    eq_(None, message.get_attached_message())
-    ok_(str(message))
+    assert not (message.is_attachment())
+    assert not (message.is_inline())
+    assert not (message.is_delivery_notification())
+    assert not (message.is_bounce())
+    assert message.to_python_message()
+    assert None == message.get_attached_message()
+    assert str(message)
 
 
 def message_alter_body_and_serialize_test():
     message = create.from_string(IPHONE)
 
     parts = list(message.walk())
-    eq_(3, len(parts))
-    eq_(u'\r\n\r\n\r\n~Danielle', parts[2].body)
-    eq_((None, {}), parts[2].content_disposition)
-    eq_(('inline', {'filename': 'photo.JPG'}), parts[1].content_disposition)
+    assert 3 == len(parts)
+    assert u'\r\n\r\n\r\n~Danielle' == parts[2].body
+    assert (None, {}) == parts[2].content_disposition
+    assert ('inline', {'filename': 'photo.JPG'}) == parts[1].content_disposition
 
     part = list(message.walk())[2]
     part.body = u'Привет, Danielle!\r\n\r\n'
@@ -76,48 +74,48 @@ def message_alter_body_and_serialize_test():
         message2 = create.from_string(message.to_string())
 
     parts = list(message1.walk())
-    eq_(3, len(parts))
-    eq_(u'Привет, Danielle!\r\n\r\n', parts[2].body)
+    assert 3 == len(parts)
+    assert u'Привет, Danielle!\r\n\r\n' == parts[2].body
 
     parts = list(message2.walk())
-    eq_(3, len(parts))
-    eq_(u'Привет, Danielle!\r\n\r\n', parts[2].body)
+    assert 3 == len(parts)
+    assert u'Привет, Danielle!\r\n\r\n' == parts[2].body
 
 
 def message_content_dispositions_test():
     message = create.from_string(IPHONE)
 
     parts = list(message.walk())
-    eq_((None, {}), parts[2].content_disposition)
-    eq_(('inline', {'filename': 'photo.JPG'}), parts[1].content_disposition)
+    assert (None, {}) == parts[2].content_disposition
+    assert ('inline', {'filename': 'photo.JPG'}) == parts[1].content_disposition
 
     message = create.from_string("Content-Disposition: Нельзя распарсить")
     parts = list(message.walk(with_self=True))
     # content disposition value is anything (including unicode chars) up to the first space, tab or semicolon
     # but non-ascii value will raise DecodeError
     # FIXME: In python 2 the returned value is binary, should it be unicode?
-    expected_cd = u'нельзя' if six.PY3 else 'Нельзя'
-    eq_((expected_cd, {}), parts[0].content_disposition)
+    expected_cd = u'нельзя'
+    assert (expected_cd, {}) == parts[0].content_disposition
 
 
 def message_from_python_test():
     message = create.from_string(ENCLOSED)
-    eq_(2, len(message.parts))
-    eq_('multipart/alternative', message.parts[1].enclosed.content_type)
-    eq_('multipart/mixed', message.content_type)
-    assert_false(message.body)
+    assert 2 == len(message.parts)
+    assert 'multipart/alternative' == message.parts[1].enclosed.content_type
+    assert 'multipart/mixed' == message.content_type
+    assert not (message.body)
 
     message.headers['Sasha'] = 'Hello!'
     message.parts[1].enclosed.headers['Yo'] = u'Man'
-    ok_(message.to_string())
-    ok_(str(message))
-    ok_(str(message.parts[0]))
-    eq_('4FEEF9B3.7060508@example.net', message.message_id)
-    eq_('Wow', message.subject)
+    assert message.to_string()
+    assert str(message)
+    assert str(message.parts[0])
+    assert '4FEEF9B3.7060508@example.net' == message.message_id
+    assert 'Wow' == message.subject
 
     m = message.get_attached_message()
-    eq_('multipart/alternative', str(m.content_type))
-    eq_('Thanks!', m.subject)
+    assert 'multipart/alternative' == str(m.content_type)
+    assert 'Thanks!' == m.subject
 
 
 def set_message_id_test():
@@ -128,8 +126,8 @@ def set_message_id_test():
     message.message_id = 'some.message.id@example.net'
 
     # Then
-    eq_('some.message.id@example.net', message.message_id)
-    eq_('<some.message.id@example.net>', message.headers['Message-Id'])
+    assert 'some.message.id@example.net' == message.message_id
+    assert '<some.message.id@example.net>' == message.headers['Message-Id']
 
 
 def clean_subject_test():
@@ -138,7 +136,7 @@ def clean_subject_test():
     message.headers['Subject'] = 'FWD: RE: FW: Foo Bar'
 
     # When/Then
-    eq_('Foo Bar', message.clean_subject)
+    assert 'Foo Bar' == message.clean_subject
 
 
 def references_test():
@@ -147,9 +145,7 @@ def references_test():
         _email.message_from_string(MULTI_RECEIVED_HEADERS))
 
     # When/Then
-    eq_({'AANLkTi=1ANR2FzeeQ-vK3-_ty0gUrOsAxMRYkob6CL-c@mail.gmail.com',
-         'AANLkTinUdYK2NpEiYCKGnCEp_OXKqst_bWNdBVHsfDVh@mail.gmail.com'},
-        set(message.references))
+    assert {'AANLkTi=1ANR2FzeeQ-vK3-_ty0gUrOsAxMRYkob6CL-c@mail.gmail.com', 'AANLkTinUdYK2NpEiYCKGnCEp_OXKqst_bWNdBVHsfDVh@mail.gmail.com'} == set(message.references)
 
 
 def detected_fields_test():
@@ -158,10 +154,10 @@ def detected_fields_test():
     attachment = message.parts[1]
 
     # When/Then
-    eq_('mailgun.png', attachment.detected_file_name)
-    eq_('png', attachment.detected_subtype)
-    eq_('image', attachment.detected_format)
-    ok_(not attachment.is_body())
+    assert 'mailgun.png' == attachment.detected_file_name
+    assert 'png' == attachment.detected_subtype
+    assert 'image' == attachment.detected_format
+    assert not attachment.is_body()
 
 
 def bounce_test():
@@ -169,8 +165,8 @@ def bounce_test():
     message = create.from_string(BOUNCE)
 
     # Then
-    ok_(message.is_bounce())
-    eq_('5.1.1', message.bounce.status)
+    assert message.is_bounce()
+    assert '5.1.1' == message.bounce.status
 
     expected_code = (
         'smtp; 550-5.1.1 The email account that you tried to reach does    '
@@ -181,24 +177,20 @@ def bounce_test():
 
     # In Python 2 email.message.Message used to truncate leading spaces, but
     # in Python 3 leading spaces are preserved.
-    if six.PY2:
-        expected_code = expected_code.replace('  ', ' ').replace('  ', ' ')
-
-    eq_(expected_code, message.bounce.diagnostic_code)
+    assert expected_code == message.bounce.diagnostic_code
 
 def torture_test():
     message = create.from_string(TORTURE)
-    ok_(list(message.walk(with_self=True)))
-    ok_(message.size)
+    assert list(message.walk(with_self=True))
+    assert message.size
     message.parts[0].content_encoding = 'blablac'
 
 
 def text_only_test():
     message = create.from_string(TEXT_ONLY)
-    eq_(u"Hello,\r\nI'm just testing message parsing\r\n\r\nBR,\r\nBob",
-        message.body)
-    ok_(not message.is_bounce())
-    eq_(None, message.get_attached_message())
+    assert u"Hello,\r\nI'm just testing message parsing\r\n\r\nBR,\r\nBob" == message.body
+    assert not message.is_bounce()
+    assert None == message.get_attached_message()
 
 
 def message_headers_equivalence_test():
@@ -210,7 +202,7 @@ def message_headers_equivalence_test():
     fallback_message = create.from_string(ENCLOSED)
 
     # When
-    eq_(message.headers.items(), fallback_message.headers.items())
+    assert message.headers.items() == fallback_message.headers.items()
 
 
 def message_headers_mutation_test():
@@ -219,9 +211,8 @@ def message_headers_mutation_test():
     """
     # Given
     orig = create.from_string(ENCLOSED)
-    eq_('Wow', orig.headers['Subject'])
-    eq_(ContentType('multipart', 'mixed', {'boundary': u'===============6195527458677812340=='}),
-        orig.headers['Content-Type'])
+    assert 'Wow' == orig.headers['Subject']
+    assert ContentType('multipart', 'mixed', {'boundary': u'===============6195527458677812340=='}) == orig.headers['Content-Type']
 
     # When
     del orig.headers['Subject']
@@ -231,9 +222,9 @@ def message_headers_mutation_test():
     restored = create.from_python(orig.to_python_message())
 
     # Then
-    ok_('Subject' not in restored.headers)
-    eq_('', restored.subject)
-    eq_(ContentType('text', 'foo'), restored.headers['Content-Type'])
+    assert 'Subject' not in restored.headers
+    assert '' == restored.subject
+    assert ContentType('text', 'foo') == restored.headers['Content-Type']
 
 
 def message_headers_append_test():
@@ -250,8 +241,8 @@ def message_headers_append_test():
     restored = create.from_python(orig.to_python_message())
 
     # Then
-    eq_(('Blah', 'kitty'), restored.headers.items()[0])
-    eq_(('Foo-Bar', 'hello'), restored.headers.items()[1])
+    assert ('Blah', 'kitty') == restored.headers.items()[0]
+    assert ('Foo-Bar', 'hello') == restored.headers.items()[1]
 
 
 def message_headers_transform_test():
@@ -267,64 +258,36 @@ def message_headers_transform_test():
     restored = create.from_python(orig.to_python_message())
 
     # Then
-    eq_([('X-Delivered-To', 'b'),
-         ('X-Received', 'b'),
-         ('X-Received', 'b'),
-         ('X-Return-Path', '<'),
-         ('X-Received', 'f'),
-         ('X-Received-Spf', 'p'),
-         ('X-Authentication-Results', 'm'),
-         ('X-Dkim-Signature', 'a'),
-         ('X-Domainkey-Signature', 'a'),
-         ('X-Content-Type', 'm'),
-         ('X-Mime-Version', '1'),
-         ('X-Received', 'b'),
-         ('X-Received', 'f'),
-         ('X-Message-Id', '<'),
-         ('X-Date', 'S'),
-         ('X-From', 'B'),
-         ('X-User-Agent', 'M'),
-         ('X-To', u'"'),
-         ('X-Subject', 'W'),
-         ('X-X-Example-Sid', 'W')],
-        restored.headers.items())
+    assert [('X-Delivered-To', 'b'), ('X-Received', 'b'), ('X-Received', 'b'), ('X-Return-Path', '<'), ('X-Received', 'f'), ('X-Received-Spf', 'p'), ('X-Authentication-Results', 'm'), ('X-Dkim-Signature', 'a'), ('X-Domainkey-Signature', 'a'), ('X-Content-Type', 'm'), ('X-Mime-Version', '1'), ('X-Received', 'b'), ('X-Received', 'f'), ('X-Message-Id', '<'), ('X-Date', 'S'), ('X-From', 'B'), ('X-User-Agent', 'M'), ('X-To', u'"'), ('X-Subject', 'W'), ('X-X-Example-Sid', 'W')] == restored.headers.items()
 
 
 def bilingual_test():
     message = create.from_string(BILINGUAL)
-    eq_(u"Simple text. How are you? Как ты поживаешь?",
-        message.headers['Subject'])
+    assert u"Simple text. How are you? Как ты поживаешь?" == message.headers['Subject']
 
     message.headers['Subject'] = u"Да все ок!"
-    eq_(u"Да все ок!", message.headers['Subject'])
+    assert u"Да все ок!" == message.headers['Subject']
 
     message = create.from_string(message.to_string())
-    eq_(u"Да все ок!", message.headers['Subject'])
+    assert u"Да все ок!" == message.headers['Subject']
 
-    eq_("", message.headers.get("SashaNotExists", ""))
+    assert "" == message.headers.get("SashaNotExists", "")
 
 
 def broken_headers_test():
-    if six.PY2:
-        message = create.from_string(MAILFORMED_HEADERS)
-    else:
-        message = create.from_string(MAILFORMED_HEADERS.decode('utf-8', 'replace'))
+    message = create.from_string(MAILFORMED_HEADERS.decode('utf-8', 'replace'))
 
-    ok_(message.headers['Subject'])
-    eq_(six.text_type, type(message.headers['Subject']))
+    assert message.headers['Subject']
+    assert str == type(message.headers['Subject'])
 
 
 def broken_headers_test_2():
-    if six.PY2:
-        message = create.from_string(SPAM_BROKEN_HEADERS)
-    else:
-        message = create.from_string(SPAM_BROKEN_HEADERS.decode('utf-8', 'replace'))
+    message = create.from_string(SPAM_BROKEN_HEADERS.decode('utf-8', 'replace'))
 
-    ok_(message.headers['Subject'])
-    eq_(six.text_type, type(message.headers['Subject']))
-    eq_(('text/plain', {'charset': 'iso-8859-1'}),
-        message.headers['Content-Type'])
-    eq_(six.text_type, type(message.body))
+    assert message.headers['Subject']
+    assert str == type(message.headers['Subject'])
+    assert ('text/plain', {'charset': 'iso-8859-1'}) == message.headers['Content-Type']
+    assert str == type(message.body)
 
 
 def test_walk():
@@ -337,10 +300,9 @@ def test_walk():
         'text/plain',
         'text/html'
         ]
-    eq_(expected[1:], [str(p.content_type) for p in message.walk()])
-    eq_(expected, [str(p.content_type) for p in message.walk(with_self=True)])
-    eq_(['text/plain', 'message/rfc822'],
-        [str(p.content_type) for p in message.walk(skip_enclosed=True)])
+    assert expected[1:] == [str(p.content_type) for p in message.walk()]
+    assert expected == [str(p.content_type) for p in message.walk(with_self=True)]
+    assert ['text/plain', 'message/rfc822'] == [str(p.content_type) for p in message.walk(skip_enclosed=True)]
 
 
 def test_binary_attachment():
@@ -358,7 +320,7 @@ def test_binary_attachment():
     def part_spec(p):
         return str(p.content_type), type(p.body)
 
-    eq_(('multipart/mixed', type(None)), part_spec(parts[0]))
-    eq_(('multipart/alternative', type(None)), part_spec(parts[1]))
-    eq_(('text/plain', six.text_type), part_spec(parts[2]))
-    eq_(('application/pdf', six.binary_type), part_spec(parts[3]))
+    assert ('multipart/mixed', type(None)) == part_spec(parts[0])
+    assert ('multipart/alternative', type(None)) == part_spec(parts[1])
+    assert ('text/plain', str) == part_spec(parts[2])
+    assert ('application/pdf', bytes) == part_spec(parts[3])

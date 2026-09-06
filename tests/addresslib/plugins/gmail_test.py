@@ -5,9 +5,8 @@ import string
 
 from flanker.addresslib import address
 
-from mock import patch
-from nose.tools import assert_equal, assert_not_equal
-from nose.tools import nottest
+from unittest.mock import patch
+from tests import nottest
 
 from ... import skip_if_asked
 
@@ -33,7 +32,7 @@ def test_exchanger_lookup():
     # very simple test that should fail Gmail custom grammar
     addr_string = '!mailgun' + DOMAIN
     addr = address.validate_address(addr_string)
-    assert_equal(addr, None)
+    assert addr == None
 
 
 def test_gmail_pass():
@@ -44,35 +43,35 @@ def test_gmail_pass():
         for i in range(6, 31):
             localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # start must be letter or num
         for i in string.ascii_letters + string.digits:
             localpart = str(i) + 'aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # end must be letter or number
         for i in string.ascii_letters + string.digits:
             localpart = 'aaaaa' + str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # must be letter, num, or dots
         for i in string.ascii_letters + string.digits + '.':
             localpart = 'aaa' + str(i) + '000'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # non-consecutive dots (.) within an address are legal
         for localpart in ['a.aaaaa', 'aa.aaaa', 'aaa.aaa','aa.aa.aa']:
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
         # everything after plus (+) is ignored
         for localpart in ['aaaaaa+', 'aaaaaa+tag', 'aaaaaa+tag+tag','aaaaaa++tag', 'aaaaaa+' + ATOM_STR]:
             addr = address.validate_address(localpart + DOMAIN)
-            assert_not_equal(addr, None)
+            assert addr != None
 
 
 def test_gmail_fail():
@@ -83,19 +82,19 @@ def test_gmail_fail():
         for i in list(range(0, 6)) + list(range(31, 40)):
             localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid start char (must start with letter)
         for i in string.punctuation:
             localpart = str(i) + 'aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid end char (must end with letter or digit)
         for i in string.punctuation:
             localpart = 'aaaaa' + str(i)
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid chars (must be letter, num, or dot)
         invalid_chars = string.punctuation
@@ -103,14 +102,14 @@ def test_gmail_fail():
         for i in invalid_chars:
             localpart = 'aaa' + str(i) + '000'
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # invalid consecutive dots (.)
         for localpart in ['aaaaaa......', '......aaaaaa', 'aaa......aaa','aa...aa...aa']:
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None
 
         # everything after plus (+) is ignored
         for localpart in ['+t1', 'a+t1', 'aa+', 'aaa+t1', 'aaaa+t1+t2','aaaaa++t1']:
             addr = address.validate_address(localpart + DOMAIN)
-            assert_equal(addr, None)
+            assert addr == None

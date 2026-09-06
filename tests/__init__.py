@@ -11,8 +11,19 @@ def fixture_file(name):
     return join(fixtures_path(), name)
 
 
+def nottest(func):
+    """Mark a helper so pytest never collects it as a test.
+
+    Replaces ``nose.tools.nottest``; several helpers in this suite are named
+    ``*_test`` and would otherwise be collected under the ``python_functions =
+    *_test`` rule in ``pyproject.toml``.
+    """
+    func.__test__ = False
+    return func
+
+
 def skip_if_asked():
-    from nose import SkipTest
+    from unittest import SkipTest
     import sys
     if '--no-skip' not in sys.argv:
         raise SkipTest()

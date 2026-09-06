@@ -1,7 +1,6 @@
 # coding:utf-8
 
 import flanker.mime.message.part as part
-from nose.tools import eq_
 
 STRINGS = (
     # Some normal strings
@@ -150,5 +149,5 @@ zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz''')
 def test_encode():
     for p, e in STRINGS:
         enc = part._encode_transfer_encoding('quoted-printable', p)
-        eq_(enc, e)
+        assert enc == e
 

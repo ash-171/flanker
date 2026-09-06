@@ -44,10 +44,21 @@ dependencies = [
 [project.optional-dependencies]
 validator = ["dnsq>=1.1.6", "redis>=2.7.1"]
 cchardet = ["cchardet>=0.3.5"]
-tests = ["pytest", "coverage"]
+tests = ["pytest>=7.0", "coverage"]
 
 [tool.setuptools.packages.find]
 exclude = ["tests*"]
 
 [tool.setuptools.package-data]
 flanker = ["addresslib/_parser/*.py"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+# Upstream used nose, which collects any callable whose name contains "test".
+# Keep collecting the suite's legacy `*_test.py` / `*_test` names alongside the
+# modern `test_*` convention so the port needs no mass renames. Helper functions
+# named `*_test` opt out with `@nottest` (tests/__init__.py).
+python_files = ["*_test.py", "test_*.py"]
+python_functions = ["test_*", "*_test"]
+python_classes = ["Test*", "*Test"]
