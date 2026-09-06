@@ -1,5 +1,3 @@
-# coding:utf-8
-
 """
 Validation module that that supports alternate spelling suggestions for
 domains, MX record lookup and query, as well as custom local-part grammar for

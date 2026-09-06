@@ -5,8 +5,7 @@ from collections import deque
 from itertools import groupby
 
 import regex as re
-import six
-from six.moves import urllib_parse
+import urllib.parse as urllib_parse
 
 from flanker.mime.message import charsets
 from flanker.mime.message.headers import encodedword
@@ -22,7 +21,7 @@ def decode(header):
          value, {'key': u'val'}
      returns None in case of any failure
     """
-    if six.PY3 and isinstance(header, six.binary_type):
+    if isinstance(header, bytes):
         header = header.decode('utf-8')
 
     value, rest = split(encodedword.unfold(header))

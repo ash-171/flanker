@@ -1,6 +1,5 @@
 import base64
 import regex as re
-import six
 import time
 
 from cryptography.hazmat.backends import default_backend
@@ -77,11 +76,11 @@ class DomainKeySigner(object):
         self._key = key
 
         self._selector = selector
-        if six.PY3 and isinstance(selector, six.text_type):
+        if isinstance(selector, str):
             self._selector = selector.encode('utf-8')
 
         self._domain = domain
-        if six.PY3 and isinstance(domain, six.text_type):
+        if isinstance(domain, str):
             self._domain = domain.encode('utf-8')
 
         self._signed_headers = None
@@ -90,7 +89,7 @@ class DomainKeySigner(object):
         canonicalization = NoFWSCanonicalization()
         signer = self._key.signer(padding.PKCS1v15(), hashes.SHA1())
 
-        if six.PY3 and isinstance(message, six.text_type):
+        if isinstance(message, str):
             message = message.encode('utf-8')
 
         headers, body = _rfc822_parse(message)
@@ -126,11 +125,11 @@ class DKIMSigner(object):
         self._key = key
 
         self._selector = selector
-        if six.PY3 and isinstance(selector, six.text_type):
+        if isinstance(selector, str):
             self._selector = selector.encode('utf-8')
 
         self._domain = domain
-        if six.PY3 and isinstance(domain, six.text_type):
+        if isinstance(domain, str):
             self._domain = domain.encode('utf-8')
 
         self._header_canonicalization = header_canonicalization

@@ -1,10 +1,8 @@
 """
 Implements message threading
 """
-import six
 
 from flanker import _email
-
 
 def build_thread(messages):
     """
@@ -16,21 +14,18 @@ def build_thread(messages):
     thread.prune_empty()
     return thread
 
-
 def build_table(messages):
     id_table = {}
     for message in messages:
         map_message(message, id_table)
     return id_table
 
-
 def build_root_set(table):
     root = Container()
-    for container in six.itervalues(table):
+    for container in table.values():
         if not container.parent:
             root.add_child(container)
     return root
-
 
 def map_message(message, table):
 
@@ -66,10 +61,8 @@ def map_message(message, table):
     if prev and not introduces_loop(prev, this):
         prev.add_child(this)
 
-
 def introduces_loop(parent, child):
     return parent == child or child.has_descendant(parent)
-
 
 class Container(object):
     def __init__(self, message=None):
@@ -195,7 +188,6 @@ class Container(object):
                 container = container.next
             else:
                 container = container.next
-
 
 class Wrapper(object):
     def __init__(self, message):

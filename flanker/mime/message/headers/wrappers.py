@@ -2,7 +2,6 @@
 provide some convenience access methods
 """
 import regex as re
-import six
 
 import flanker.addresslib.address
 from flanker import _email
@@ -119,7 +118,7 @@ class ContentType(tuple):
                 and self.params == other.params
         elif isinstance(other, tuple):
             return tuple.__eq__(self, other)
-        elif isinstance(other, six.string_types):
+        elif isinstance(other, str):
             return str(self) == other
         else:
             return False
@@ -155,7 +154,7 @@ class MessageId(str):
 
     @classmethod
     def from_string(cls, string):
-        if not isinstance(string, six.string_types):
+        if not isinstance(string, str):
             return None
         for message_id in cls.scan(string):
             return message_id
@@ -181,11 +180,11 @@ class MessageId(str):
                 yield cls(message_id)
 
 
-class Subject(six.text_type):
+class Subject(str):
     RE_RE = re.compile(r"((RE|FW|FWD|HA)([[]\d])*:\s*)*", re.I)
 
     def __new__(cls, *args, **kw):
-        return six.text_type.__new__(cls, *args, **kw)
+        return str.__new__(cls, *args, **kw)
 
     def strip_replies(self):
         return self.RE_RE.sub('', self)

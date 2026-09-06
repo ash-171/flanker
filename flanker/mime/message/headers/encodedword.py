@@ -1,9 +1,7 @@
-# coding:utf-8
 import logging
 from base64 import b64encode
 
 import regex as re
-import six
 
 from flanker import _email
 from flanker.mime.message import charsets, errors
@@ -52,7 +50,7 @@ def mime_to_unicode(header):
         u"Hello"
     """
     # Only string header values need to be converted.
-    if not isinstance(header, six.string_types):
+    if not isinstance(header, str):
         return header
 
     try:
@@ -86,7 +84,7 @@ def mime_to_unicode(header):
     except Exception:
         try:
             logged_header = header
-            if isinstance(logged_header, six.text_type):
+            if isinstance(logged_header, str):
                 logged_header = logged_header.encode('utf-8')
                 # encode header as utf-8 so all characters can be base64 encoded
             logged_header = b64encode(logged_header)
@@ -124,9 +122,6 @@ def _decode_part(charset, encoding, value):
 
 
 def _decode_quoted_printable(qp):
-    if six.PY2:
-        return _email.decode_quoted_printable(str(qp))
-
     buf = bytearray()
     size = len(qp)
     i = 0
@@ -155,4 +150,4 @@ def _decode_quoted_printable(qp):
         buf.append(codepoint)
         i += 2
 
-    return six.binary_type(buf)
+    return bytes(buf)

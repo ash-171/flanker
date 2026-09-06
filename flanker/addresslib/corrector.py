@@ -1,4 +1,3 @@
-# coding:utf-8
 """
 Spelling corrector library, used to correct common typos in domains like
 gmal.com instead of gmail.com.

@@ -1,5 +1,3 @@
-# coding:utf-8
-
 """
 Public interface for flanker address (email or url) parsing and validation
 capabilities.
@@ -36,11 +34,10 @@ See the parser.py module for implementation details of the parser.
 from logging import getLogger
 
 import idna
-import six
 from idna import IDNAError
 from ply.lex import LexError
 from ply.yacc import YaccError
-from six.moves.urllib_parse import urlparse
+from urllib.parse import urlparse
 from time import time
 from tld import get_tld
 
@@ -123,7 +120,7 @@ def parse(address, addr_spec_only=False, strict=False, metrics=False):
                 addr_obj = _lift_parse_result(parse_rs)
                 if addr_obj:
                     display_name = ' '.join(addr_parts[:-1])
-                    if isinstance(display_name, six.binary_type):
+                    if isinstance(display_name, bytes):
                         display_name = display_name.decode('utf-8')
                     addr_obj._display_name = display_name
 
@@ -227,7 +224,7 @@ def parse_list(address_list, strict=False, as_tuple=False, metrics=False):
 
         parsed, unparsed = AddressList(), []
         for address in address_list:
-            if isinstance(address, six.string_types):
+            if isinstance(address, str):
                 addr_obj, metrics = parse(address, strict=strict, metrics=True)
                 mtimes['parsing'] += metrics['parsing']
                 if addr_obj:
@@ -243,7 +240,7 @@ def parse_list(address_list, strict=False, as_tuple=False, metrics=False):
 
         return _parse_list_result(as_tuple, parsed, unparsed, mtimes)
 
-    if isinstance(address_list, six.string_types):
+    if isinstance(address_list, str):
         if len(address_list) > MAX_ADDRESS_LIST_LENGTH:
             _log.warning('address list exceeds maximum length of %s', MAX_ADDRESS_LIST_LENGTH)
             return _parse_list_result(as_tuple, AddressList(), [address_list], mtimes)
@@ -489,9 +486,9 @@ class EmailAddress(Address):
         if not is_pure_ascii(self._hostname):
             idna.encode(self._hostname)
 
-        assert isinstance(self._display_name, six.text_type)
-        assert isinstance(self._mailbox, six.text_type)
-        assert isinstance(self._hostname, six.text_type)
+        assert isinstance(self._display_name, str)
+        assert isinstance(self._mailbox, str)
+        assert isinstance(self._hostname, str)
 
     @property
     def addr_type(self):
@@ -603,7 +600,7 @@ class EmailAddress(Address):
         """
         Allows comparison of two addresses.
         """
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             other = parse(other)
         if other:
             return self.address.lower() == other.address.lower()
@@ -708,7 +705,7 @@ class UrlAddress(Address):
         return self.address
 
     def __eq__(self, other):
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             other = parse(other)
         if other:
             return self.address == other.address
@@ -765,7 +762,7 @@ class AddressList(object):
         """
         When comparing ourselves to other lists we must ignore order.
         """
-        if isinstance(other, (list, six.binary_type, six.text_type)):
+        if isinstance(other, (list, bytes, str)):
             other = parse_list(other)
         if not isinstance(other, AddressList):
             raise TypeError('Cannot compare with %s' % type(other))
@@ -877,22 +874,15 @@ def _parse_list_result(as_tuple, parsed, unparsed, mtimes):
 
 def _to_parser_input(parser_in):
     """
-    Normalize the input to binary in Python 2, and text in Python 3.
+    Normalize the input to text.
     """
     if parser_in is None:
         return None
 
-    if six.PY2:
-        if isinstance(parser_in, six.text_type):
-            parser_in = parser_in.encode('utf-8')
-        assert isinstance(parser_in, six.binary_type), (
-            'Expected %s, got %s' % (six.binary_type, type(parser_in)))
-        return parser_in
-
-    if isinstance(parser_in, six.binary_type):
+    if isinstance(parser_in, bytes):
         parser_in = parser_in.decode('utf-8')
-    assert isinstance(parser_in, six.text_type), (
-        'Expected %s, got %s' % (six.text_type, type(parser_in)))
+    assert isinstance(parser_in, str), (
+        'Expected %s, got %s' % (str, type(parser_in)))
     return parser_in
 
 
@@ -903,10 +893,10 @@ def _to_text(val):
     if val is None:
         return None
 
-    if isinstance(val, six.binary_type):
+    if isinstance(val, bytes):
         return val.decode('utf-8')
 
-    if isinstance(val, six.text_type):
+    if isinstance(val, str):
         return val
 
     raise TypeError('String type expected, got %s' % type(val))
@@ -914,16 +904,12 @@ def _to_text(val):
 
 def _to_str(val):
     """
-    Converts val to str. Note that in different Python version the returned
-    value has different semantic, and that is intentional.
+    Converts val to str.
     """
     if val is None:
         return None
 
     if isinstance(val, str):
         return val
-
-    if six.PY2:
-        return val.encode('utf-8')
 
     return val.decode('utf-8')

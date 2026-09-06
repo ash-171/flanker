@@ -1,8 +1,6 @@
 import logging
 from collections import deque
 
-import six
-
 import flanker.addresslib.address
 from flanker import _email
 from flanker.mime.message.headers import parametrized
@@ -50,8 +48,6 @@ def _encode_address_header(name, value):
     for addr in flanker.addresslib.address.parse_list(value):
         if addr.requires_non_ascii():
             encoded_addr = addr.to_unicode()
-            if six.PY2:
-                encoded_addr = encoded_addr.encode('utf-8')
         else:
             encoded_addr = addr.full_spec()
 
@@ -61,7 +57,7 @@ def _encode_address_header(name, value):
 
 def _encode_parametrized(key, value, params):
     if params:
-        params = [_encode_param(key, n, v) for n, v in six.iteritems(params)]
+        params = [_encode_param(key, n, v) for n, v in params.items()]
         return value + '; ' + ('; '.join(params))
 
     return value
@@ -69,9 +65,6 @@ def _encode_parametrized(key, value, params):
 
 def _encode_param(key, name, value):
     try:
-        if six.PY2:
-            value = value.encode('ascii')
-
         return _email.format_param(name, value)
     except Exception:
         value = value.encode('utf-8')

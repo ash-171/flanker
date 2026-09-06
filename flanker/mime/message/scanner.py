@@ -2,8 +2,7 @@ from collections import deque
 from logging import getLogger
 
 import regex as re
-import six
-from six.moves import StringIO
+from io import StringIO
 
 from flanker.mime.message.errors import DecodingError
 from flanker.mime.message.headers import parsing, is_empty, ContentType
@@ -17,15 +16,11 @@ def scan(string):
     """Scanner that uses 1 pass to scan the entire message and
     build a message tree"""
 
-    if six.PY2:
-        if not isinstance(string, six.binary_type):
-            raise DecodingError('Scanner works with binary only')
-    else:
-        if isinstance(string, six.binary_type):
-            string = to_unicode(string)
+    if isinstance(string, bytes):
+        string = to_unicode(string)
 
-        if not isinstance(string, six.text_type):
-            raise DecodingError('Cannot scan type %s' % type(string))
+    if not isinstance(string, str):
+        raise DecodingError('Cannot scan type %s' % type(string))
 
     tokens = tokenize(string)
     if not tokens:
@@ -35,7 +30,7 @@ def scan(string):
     except DecodingError:
         raise
     except Exception as cause:
-        raise six.raise_from(DecodingError("Malformed MIME message"), cause)
+        raise DecodingError("Malformed MIME message") from cause
 
 
 def traverse(pointer, iterator, parent=None, allow_bad_mime=False):
@@ -404,7 +399,7 @@ def tokenize(string):
     """
     Scans the entire message to find all Content-Types and boundaries.
     """
-    if six.PY3 and isinstance(string, six.binary_type):
+    if isinstance(string, bytes):
         string = string.decode('utf-8')
 
     tokens = deque()

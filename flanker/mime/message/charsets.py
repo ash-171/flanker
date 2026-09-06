@@ -1,6 +1,5 @@
 import codecs
 
-import six
 
 from flanker.mime.message.utils import to_unicode
 
@@ -12,7 +11,7 @@ _ALIASES = {
 
 
 def convert_to_unicode(charset, value):
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         return value
 
     charset = _ensure_charset(charset)

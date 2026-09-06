@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flanker"
+version = "1.0.0.dev0"
+description = "Mailgun Parsing Tools"
+readme = "README.rst"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Mailgun Technologies Inc.", email = "admin@mailgunhq.com" }]
+maintainers = [{ name = "Mailgun Technologies Inc.", email = "admin@mailgunhq.com" }]
+urls = { Homepage = "https://www.mailgun.com/" }
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "attrs",
+    "chardet>=1.0.1",
+    "cryptography>=0.5",
+    "idna>=2.5",
+    "ply>=3.10",
+    "regex>=0.1.20110315",
+    "tld",
+    "WebOb>=0.9.8",
+]
+
+# NOTE vs. the legacy setup.py:
+#   - dropped "six"            (Python 2/3 straddle removed; project is Python 3 only)
+#   - dropped "standard-imghdr" (imghdr usage replaced by flanker/_imagetype.py)
+
+[project.optional-dependencies]
+validator = ["dnsq>=1.1.6", "redis>=2.7.1"]
+cchardet = ["cchardet>=0.3.5"]
+tests = ["pytest", "coverage"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+flanker = ["addresslib/_parser/*.py"]

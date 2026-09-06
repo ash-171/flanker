@@ -4,9 +4,7 @@ from email.generator import Generator
 from email.header import Header
 from email.mime import audio
 from email.utils import make_msgid
-
-import six
-from six.moves import StringIO
+from io import StringIO
 
 _CRLF = '\r\n'
 _SPLIT_CHARS = ' ;,'
@@ -17,30 +15,21 @@ _SPLIT_CHARS = ' ;,'
 _MAX_LINE_LEN = 76
 
 
-if six.PY3:
-    from email.policy import Compat32
+from email.policy import Compat32
 
-    class _Compat32CRLF(Compat32):
-        linesep = _CRLF
 
-    _compat32_crlf = _Compat32CRLF()
+class _Compat32CRLF(Compat32):
+    linesep = _CRLF
 
-else:
-    from email import generator, header, quoprimime, feedparser
-    generator.NL = _CRLF
-    header.NL = _CRLF
-    quoprimime.NL = _CRLF
-    feedparser.NL = _CRLF
+
+_compat32_crlf = _Compat32CRLF()
 
 
 def message_from_string(string):
-    if six.PY3:
-        if isinstance(string, six.binary_type):
-            return email.message_from_bytes(string, policy=_compat32_crlf)
+    if isinstance(string, bytes):
+        return email.message_from_bytes(string, policy=_compat32_crlf)
 
-        return email.message_from_string(string, policy=_compat32_crlf)
-
-    return email.message_from_string(string)
+    return email.message_from_string(string, policy=_compat32_crlf)
 
 
 def message_to_string(msg):
@@ -48,21 +37,8 @@ def message_to_string(msg):
     Converts python message to string in a proper way.
     """
     with closing(StringIO()) as fp:
-        if six.PY3:
-            g = Generator(fp, mangle_from_=False, policy=_compat32_crlf)
-            g.flatten(msg, unixfrom=False)
-            return fp.getvalue()
-
-        g = Generator(fp, mangle_from_=False)
+        g = Generator(fp, mangle_from_=False, policy=_compat32_crlf)
         g.flatten(msg, unixfrom=False)
-
-        # In Python 2 Generator.flatten uses `print >> ` to write to fp, that
-        # adds `\n` regardless of generator.NL value. So we resort to a hackish
-        # way of replacing LF with RFC complaint CRLF.
-        for i, v in enumerate(fp.buflist):
-            if v == '\n':
-                fp.buflist[i] = _CRLF
-
         return fp.getvalue()
 
 
@@ -92,7 +68,4 @@ def make_message_id():
 
 def encode_header(name, val, encoding='ascii', max_line_len=_MAX_LINE_LEN):
     header = Header(val, encoding, max_line_len, name)
-    if six.PY3:
-        return header.encode(_SPLIT_CHARS, linesep=_CRLF)
-
-    return header.encode(_SPLIT_CHARS)
+    return header.encode(_SPLIT_CHARS, linesep=_CRLF)

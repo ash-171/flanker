@@ -1,6 +1,5 @@
 import logging
 
-import six
 from webob.multidict import MultiDict
 
 from flanker import _email
@@ -163,21 +162,8 @@ def _try_decode(key, value):
     if isinstance(value, (tuple, list)):
         return value
 
-    if six.PY3:
-        assert (isinstance(key, six.text_type) and
-                isinstance(value, six.text_type))
-        try:
-            return headers.parse_header_value(key, value)
-        except Exception:
-            return value
-
-    if isinstance(value, six.binary_type):
-        try:
-            return headers.parse_header_value(key, value)
-        except Exception:
-            return value.decode('utf-8', 'ignore')
-
-    if isinstance(value, six.text_type):
+    assert isinstance(key, str) and isinstance(value, str)
+    try:
+        return headers.parse_header_value(key, value)
+    except Exception:
         return value
-
-    raise TypeError('%s is not allowed type of header %s' % (type(value), key))

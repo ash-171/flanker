@@ -1,5 +1,3 @@
-# coding:utf-8
-
 '''
     Email address validation plugin for aol.com email addresses.
 

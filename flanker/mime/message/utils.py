@@ -1,5 +1,4 @@
 import chardet as fallback_detector
-import six
 
 # Made cchardet optional according to https://github.com/mailgun/flanker/pull/84
 try:
@@ -44,7 +43,7 @@ def _guess_and_convert(value):
 
 
 def _make_unicode(value, charset=None):
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         return value
 
     charset = charset or "utf-8"

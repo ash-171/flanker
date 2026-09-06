@@ -1,5 +1,3 @@
-# coding:utf-8
-
 '''
     Email address validation plugin for Google Apps email addresses.
 

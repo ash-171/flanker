@@ -1,5 +1,3 @@
-# coding:utf-8
-
 """
 TokenStream represents a stream of tokens that a parser will consume.
 TokenStream can be used to consume tokens, peek ahead, and synchonize to a
@@ -8,7 +6,6 @@ compiled regular expressions or strings.
 """
 
 import re
-import six
 
 
 class TokenStream(object):
@@ -30,7 +27,7 @@ class TokenStream(object):
         be either a compiled regex or a string.
         """
         # match single character
-        if isinstance(token, six.string_types) and len(token) == 1:
+        if isinstance(token, str) and len(token) == 1:
             if self.peek() == token:
                 self.position += 1
                 return token

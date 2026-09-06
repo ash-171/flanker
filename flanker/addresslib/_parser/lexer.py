@@ -1,8 +1,6 @@
 import ply.lex as lex
 import logging
 
-import six
-
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -50,30 +48,16 @@ t_LANGLE    = r'\<'                    # '<'
 t_RANGLE    = r'\>'                    # '>'
 t_SEMICOLON = r'\;'                    # ';'
 
-if six.PY2:
-    _UTF8_2 = r'[\xC2-\xDF][\x80-\xBF]'
-    _UTF8_3 = (r'(\xE0[\xA0-\xBF][\x80-\xBF]'    
-               r'|[\xE1-\xEC][\x80-\xBF]{2}'
-               r'|\xED[\x80-\x9F][\x80-\xBF]'
-               r'|[\xEE-\xEF][\x80-\xBF]{2}'
-               r')')
-
-    _UTF8_4 = (r'(\xF0[\x90-\xBF][\x80-\xBF]{2}'
-    
-               r'|[\xF1-\xF3][\x80-\xBF]{3}'
-               r'|\xF4[\x80-\x8F][\x80-\xBF]{2}'
-               r')')
-else:
-    _UTF8_2 = r'[\u0080-\u07ff]'
-    _UTF8_3 = (r'([\u0800-\u0fff]'
-               r'|[\u1000-\ucfff]'
-               r'|[\ud000-\ud7ff]'
-               r'|[\ue000-\uffff]'
-               r')')
-    _UTF8_4 = (r'([\U00010000-\U0003ffff]'
-               r'|[\U00040000-\U000fffff]'
-               r'|[\U00100000-\U0010ffff]'
-               r')')
+_UTF8_2 = r'[\u0080-\u07ff]'
+_UTF8_3 = (r'([\u0800-\u0fff]'
+           r'|[\u1000-\ucfff]'
+           r'|[\ud000-\ud7ff]'
+           r'|[\ue000-\uffff]'
+           r')')
+_UTF8_4 = (r'([\U00010000-\U0003ffff]'
+           r'|[\U00040000-\U000fffff]'
+           r'|[\U00100000-\U0010ffff]'
+           r')')
 
 _UNICODE_CHAR = '({}|{}|{})'.format(_UTF8_2, _UTF8_3, _UTF8_4)
 

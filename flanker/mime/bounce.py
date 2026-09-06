@@ -3,9 +3,8 @@ from contextlib import closing
 
 import attr
 import regex as re
-import six
 from attr.validators import instance_of
-from six.moves import range
+from io import StringIO
 
 from flanker.mime.message.headers import MimeHeaders
 from flanker.mime.message.headers.parsing import parse_stream
@@ -26,9 +25,9 @@ _RE_STATUS = re.compile(r'\d\.\d+\.\d+', re.IGNORECASE)
 @attr.s(frozen=True)
 class Result(object):
     score = attr.ib(validator=instance_of(float))
-    status = attr.ib(validator=instance_of(six.text_type))
-    diagnostic_code = attr.ib(validator=instance_of(six.text_type))
-    notification = attr.ib(validator=instance_of(six.text_type))
+    status = attr.ib(validator=instance_of(str))
+    diagnostic_code = attr.ib(validator=instance_of(str))
+    notification = attr.ib(validator=instance_of(str))
 
     def is_bounce(self, probability=0.3):
         return self.score > probability
@@ -56,7 +55,7 @@ def _collect_headers(message):
 
 def _collect_headers_from_status(body):
     out = deque()
-    with closing(six.StringIO(body)) as stream:
+    with closing(StringIO(body)) as stream:
         for i in range(3):
             out += parse_stream(stream)
 

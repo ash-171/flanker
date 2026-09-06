@@ -1,13 +1,13 @@
 import base64
-import imghdr
+import io
 import logging
 import mimetypes
 import quopri
 from contextlib import closing
+from io import StringIO
 from os import path
 
-import six
-from six.moves import StringIO
+from flanker import _imagetype as imghdr
 
 from flanker import metrics, _email
 from flanker.mime import bounce
@@ -110,7 +110,7 @@ def adjust_content_type(content_type, body=None, filename=None):
 
     if content_type.main == 'image' and body:
         image_preamble = body[:32]
-        if six.PY3 and isinstance(body, six.text_type):
+        if isinstance(body, str):
             image_preamble = image_preamble.encode('utf-8', 'ignore')
 
         sub = imghdr.what(None, image_preamble)
@@ -161,7 +161,7 @@ class Body(object):
                 charset = 'utf-8'
 
             # it should be stored as unicode. period
-            if isinstance(body, six.binary_type):
+            if isinstance(body, bytes):
                 self.body = charsets.convert_to_unicode(charset, body)
 
             # let's be simple when possible
@@ -629,31 +629,22 @@ def _encode_charset(preferred_charset, text):
 
 
 def _encode_transfer_encoding(encoding, body):
-    if six.PY3:
-        if encoding == 'quoted-printable':
-            body = quopri.encodestring(body, quotetabs=False)
-            body = fix_leading_dot(body)
-            return body.decode('utf-8')
-
-        if encoding == 'base64':
-            if isinstance(body, six.text_type):
-                body = body.encode('utf-8')
-
-            body = _email.encode_base64(body)
-            return body.decode('utf-8')
-
-        if six.PY3 and isinstance(body, six.binary_type):
-            return body.decode('utf-8')
-
-        return body
-
     if encoding == 'quoted-printable':
         body = quopri.encodestring(body, quotetabs=False)
-        return fix_leading_dot(body)
-    elif encoding == 'base64':
-        return _email.encode_base64(body)
-    else:
-        return body
+        body = fix_leading_dot(body)
+        return body.decode('utf-8')
+
+    if encoding == 'base64':
+        if isinstance(body, str):
+            body = body.encode('utf-8')
+
+        body = _email.encode_base64(body)
+        return body.decode('utf-8')
+
+    if isinstance(body, bytes):
+        return body.decode('utf-8')
+
+    return body
 
 
 def fix_leading_dot(s):
@@ -674,16 +665,14 @@ def fix_leading_dot(s):
     clients dot stuffing the line. To combat this we convert any leading '.'
     to a '=2E'.
     """
-    infp = six.BytesIO(s)
-    outfp = six.BytesIO()
+    infp = io.BytesIO(s)
+    outfp = io.BytesIO()
 
     # TODO(thrawn01): We could scan the entire string looking for leading '.'
     #  If none found return the original string. This would save memory at the
     #  expense of some additional processing
 
-    dot = b"."
-    if six.PY3:
-        dot = ord('.')
+    dot = ord(".")
 
     while 1:
         line = infp.readline()
@@ -725,8 +714,7 @@ def _quote_and_cut(ln):
         if pos > len(ln)/2:
             break
 
-        if six.PY3:
-            c = bytes((c,))
+        c = bytes((c,))
 
         # Should be a quoted character
         if c == b'=':
@@ -742,9 +730,7 @@ def _quote_and_cut(ln):
     if new_line[-1:] in b' \t':
         new_line = new_line[:-1] + quopri.quote(new_line[-1:])
 
-    dot = b'.'
-    if six.PY3:
-        dot = ord('.')
+    dot = ord(".")
 
     # If the next line starts with a '.'
     if next_line[0] == dot:
@@ -834,9 +820,6 @@ for ch in range(256):
 
 
 def _recover_base64(s):
-    if six.PY2:
-        return s.translate(None, _b64_invalid_chars)
-
     buf = StringIO()
     chunk_start = 0
     for i, c in enumerate(s):

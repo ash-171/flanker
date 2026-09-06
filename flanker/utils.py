@@ -1,11 +1,9 @@
-# coding:utf-8
 """
 Utility functions and classes used by flanker.
 """
 import re
 from functools import wraps
 
-import six
 
 
 def is_pure_ascii(value):
@@ -23,7 +21,7 @@ def is_pure_ascii(value):
     if value is None:
         return False
 
-    if isinstance(value, six.binary_type):
+    if isinstance(value, bytes):
         try:
             value.decode('ascii')
         except UnicodeDecodeError:
@@ -31,7 +29,7 @@ def is_pure_ascii(value):
 
         return True
 
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         try:
             value.encode('ascii')
         except UnicodeEncodeError:
@@ -79,7 +77,7 @@ def metrics_wrapper():
 
 
 # allows, \t\n\v\f\r (0x09-0x0d)
-CONTROL_CHARS = ''.join([six.unichr(c) for c in range(0, 9)] +
-                        [six.unichr(c) for c in range(14, 32)] +
-                        [six.unichr(c) for c in range(127, 160)])
+CONTROL_CHARS = ''.join([chr(c) for c in range(0, 9)] +
+                        [chr(c) for c in range(14, 32)] +
+                        [chr(c) for c in range(127, 160)])
 CONTROL_CHAR_RE = re.compile('[%s]' % re.escape(CONTROL_CHARS))
